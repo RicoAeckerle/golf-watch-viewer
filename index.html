@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Golf Zähler</title>
+<style>
+  :root {
+    --bg: #eef3ee; --card: #ffffff; --ink: #1b2a1d; --muted: #6b7a6d;
+    --green: #2e7d32; --line: #d7e2d8; --strich: #d84315; --head: #e8f2e8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  #sheet { background: var(--card); border-radius: 14px; padding: 18px 16px 14px; }
+  h1 { margin: 0; font-size: 20px; color: var(--green); }
+  .sub { color: var(--muted); font-size: 13px; margin: 2px 0 6px; }
+  h2 { font-size: 17px; margin: 18px 0 6px; padding-top: 12px; border-top: 2px solid var(--line); }
+  h2:first-of-type { border-top: 0; padding-top: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 4px 0 8px; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); text-align: center; padding: 4px 0; font-variant-numeric: tabular-nums; }
+  th { background: var(--head); font-size: 12px; color: var(--muted); font-weight: 600; }
+  td { font-size: 15px; font-weight: 600; }
+  th.d, td.d { width: 70px; text-align: left; padding-left: 6px; font-weight: 500; font-size: 13px; }
+  td.x { color: var(--strich); }
+  .legend { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .actions { display: flex; gap: 10px; margin: 14px 0 0; }
+  button {
+    flex: 1; border: 0; border-radius: 22px; padding: 12px; font: inherit; font-weight: 600;
+    background: var(--green); color: #fff;
+  }
+  button.secondary { background: #c8dcc9; color: var(--ink); }
+  .empty { background: var(--card); border-radius: 14px; padding: 18px; }
+  @media print {
+    body { background: #fff; }
+    main { max-width: none; padding: 0; }
+    #sheet { padding: 0; }
+    .actions { display: none; }
+    h2 { break-after: avoid; }
+    table { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div id="sheet"></div>
+  <div class="actions" id="actions" hidden>
+    <button id="img">Als Bild teilen</button>
+    <button id="pdf" class="secondary">PDF / Drucken</button>
+  </div>
+</main>
+<script src="html2canvas.min.js"></script>
+<script>
+// Die Daten stehen nur im Link hinter dem „#“ und werden nie an einen Server geschickt.
+const STRICH = 10;
+const sheet = document.getElementById('sheet');
+
+function decode(hash) {
+  const b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(b64 + '==='.slice((b64.length + 3) % 4));
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function el(tag, attrs = {}, text) {
+  const e = document.createElement(tag);
+  Object.assign(e, attrs);
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+/** Tabelle für eine Lochhälfte (1–9 oder 10–18): Zeilen = Runden, Spalten = Löcher. */
+function table(rounds, from) {
+  const t = el('table');
+  const hr = t.insertRow();
+  hr.append(el('th', { className: 'd' }, 'Loch'));
+  for (let h = from; h < from + 9; h++) hr.append(el('th', {}, h));
+  for (const r of rounds) {
+    const byHole = new Map(r.h.map(([hole, s]) => [hole, s]));
+    const tr = t.insertRow();
+    tr.append(el('td', { className: 'd' }, r.d));
+    for (let h = from; h < from + 9; h++) {
+      const s = byHole.get(h);
+      const td = el('td', s >= STRICH ? { className: 'x' } : {}, s === undefined ? '' : (s >= STRICH ? '–' : s));
+      tr.append(td);
+    }
+  }
+  return t;
+}
+
+function render(data) {
+  sheet.append(el('h1', {}, '⛳ Golf – ' + data.t));
+  let strich = false;
+  for (const p of data.p) {
+    sheet.append(el('h2', {}, p.n));
+    const front = p.r.filter(r => r.h.some(([h]) => h <= 9));
+    const back = p.r.filter(r => r.h.some(([h]) => h >= 10));
+    if (front.length) sheet.append(table(front, 1));
+    if (back.length) sheet.append(table(back, 10));
+    strich ||= p.r.some(r => r.h.some(([, s]) => s >= STRICH));
+  }
+  if (strich) sheet.append(el('div', { className: 'legend' }, '– = Strich (Bahn beendet)'));
+  document.getElementById('actions').hidden = false;
+}
+
+async function shareImage() {
+  const canvas = await html2canvas(sheet, { scale: 2, backgroundColor: '#ffffff' });
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  const file = new File([blob], 'golf.png', { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: 'Golf' }); } catch (e) { /* abgebrochen */ }
+  } else {
+    const a = el('a', { href: URL.createObjectURL(blob), download: 'golf.png' });
+    a.click();
+  }
+}
+
+try {
+  const hash = location.hash.slice(1);
+  if (!hash) throw new Error('leer');
+  render(decode(hash));
+  document.getElementById('img').onclick = shareImage;
+  document.getElementById('pdf').onclick = () => window.print();
+} catch (e) {
+  sheet.className = 'empty';
+  sheet.append(el('h1', {}, 'Golf Zähler'));
+  sheet.append(el('p', { className: 'sub' }, 'Keine Daten. Diese Seite wird über „Teilen → Bild / PDF“ in der Uhr-App geöffnet.'));
+}
+</script>
+</body>
+</html>
