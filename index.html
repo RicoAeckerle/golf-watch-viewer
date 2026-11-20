@@ -4,42 +4,65 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Golf Zähler</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E⛳%3C/text%3E%3C/svg%3E">
+<title>GCI Golf Zähler</title>
+<link rel="icon" href="assets/favicon.png">
 <style>
+  /* Stil angelehnt an golfclub-isernhagen.de (Farben, Schriften Playfair Display + Inter, Wappen). */
+  @font-face { font-family: "Inter"; font-weight: 400; font-display: swap; src: url(fonts/inter-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 600; font-display: swap; src: url(fonts/inter-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 700; font-display: swap; src: url(fonts/inter-latin-700-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Playfair Display"; font-weight: 700; font-display: swap; src: url(fonts/playfair-display-latin-700-normal.woff2) format("woff2"); }
   :root {
-    --bg: #eef3ee; --card: #ffffff; --ink: #1b2a1d; --muted: #6b7a6d;
-    --green: #2e7d32; --line: #d7e2d8; --strich: #d84315; --head: #e8f2e8;
+    --white: #ffffff; --offwhite: #f9f9f9; --sand: #f0eee9; --lightgreen: #cfe3be;
+    --green: #477d24; --darkgreen: #18433a; --red: #e41b13; --ink: #000000; --muted: #5d6b64;
+    --line: #dcd9d1;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    margin: 0; background: var(--sand); color: var(--ink);
+    font: 15px/1.45 Inter, Arial, Helvetica, sans-serif;
   }
   main { max-width: 480px; margin: 0 auto; padding: 16px; }
-  #sheet { background: var(--card); border-radius: 14px; padding: 18px 16px 14px; }
-  h1 { margin: 0; font-size: 20px; color: var(--green); }
-  .sub { color: var(--muted); font-size: 13px; margin: 2px 0 6px; }
-  h2 { font-size: 17px; margin: 18px 0 6px; padding-top: 12px; border-top: 2px solid var(--line); }
-  h2:first-of-type { border-top: 0; padding-top: 0; }
-  table { border-collapse: collapse; width: 100%; margin: 4px 0 8px; table-layout: fixed; }
-  th, td { border: 1px solid var(--line); text-align: center; padding: 4px 0; font-variant-numeric: tabular-nums; }
-  th { background: var(--head); font-size: 12px; color: var(--muted); font-weight: 600; }
-  td { font-size: 15px; font-weight: 600; }
-  th.d, td.d { width: 70px; text-align: left; padding-left: 6px; font-weight: 500; font-size: 13px; }
-  td.x { color: var(--strich); }
-  .legend { color: var(--muted); font-size: 12px; margin-top: 10px; }
-  .actions { display: flex; gap: 10px; margin: 14px 0 0; }
-  button {
-    flex: 1; border: 0; border-radius: 22px; padding: 12px; font: inherit; font-weight: 600;
-    background: var(--green); color: #fff;
+  #sheet { background: var(--white); overflow: hidden; box-shadow: 0 2px 10px rgba(24, 67, 58, .08); }
+  header {
+    background: var(--darkgreen); color: var(--white);
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
   }
-  button.secondary { background: #c8dcc9; color: var(--ink); }
-  .empty { background: var(--card); border-radius: 14px; padding: 18px; }
+  header img.wappen { width: 46px; height: auto; flex: none; }
+  header .brand { flex: 1; min-width: 0; }
+  header img.schriftzug { display: block; width: 100%; max-width: 230px; height: auto; }
+  .content { padding: 16px 16px 14px; }
+  h1 {
+    margin: 0; font: 700 24px/1.2 "Playfair Display", Georgia, serif; color: var(--darkgreen);
+  }
+  .bar { width: 44px; height: 3px; background: var(--green); margin: 8px 0 4px; }
+  h2 {
+    font: 700 19px/1.2 "Playfair Display", Georgia, serif; color: var(--darkgreen);
+    margin: 20px 0 8px; padding-top: 14px; border-top: 1px solid var(--line);
+  }
+  h2:first-of-type { border-top: 0; padding-top: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 4px 0 10px; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); text-align: center; padding: 5px 0; font-variant-numeric: tabular-nums; }
+  th { background: var(--lightgreen); font-size: 12px; color: var(--darkgreen); font-weight: 600; }
+  td { font-size: 15px; font-weight: 600; }
+  tr:nth-child(odd) td { background: var(--offwhite); }
+  th.d, td.d { width: 72px; text-align: left; padding-left: 7px; font-weight: 400; font-size: 13px; }
+  td.x { color: var(--red); font-weight: 700; }
+  .legend { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .legend b { color: var(--red); }
+  footer { background: var(--green); height: 6px; }
+  .actions { display: flex; gap: 10px; margin: 16px 0 0; }
+  button {
+    flex: 1; border: 2px solid var(--darkgreen); border-radius: 0; padding: 12px; cursor: pointer;
+    font: 600 15px Inter, Arial, sans-serif; background: var(--darkgreen); color: var(--white);
+  }
+  button.secondary { background: transparent; color: var(--darkgreen); }
+  .empty p { color: var(--muted); }
   @media print {
     body { background: #fff; }
     main { max-width: none; padding: 0; }
-    #sheet { padding: 0; }
+    #sheet { box-shadow: none; }
+    header, th, tr:nth-child(odd) td, footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .actions { display: none; }
     h2 { break-after: avoid; }
     table { break-inside: avoid; }
@@ -48,7 +71,14 @@
 </head>
 <body>
 <main>
-  <div id="sheet"></div>
+  <div id="sheet">
+    <header>
+      <img class="wappen" src="assets/gci-wappen.png" alt="Wappen Golfclub Isernhagen">
+      <div class="brand"><img class="schriftzug" src="assets/gci-schriftzug.svg" alt="Golfclub Isernhagen"></div>
+    </header>
+    <div class="content" id="content"></div>
+    <footer></footer>
+  </div>
   <div class="actions" id="actions" hidden>
     <button id="img">Als Bild teilen</button>
     <button id="pdf" class="secondary">PDF / Drucken</button>
@@ -59,6 +89,7 @@
 // Die Daten stehen nur im Link hinter dem „#“ und werden nie an einen Server geschickt.
 const STRICH = 10;
 const sheet = document.getElementById('sheet');
+const content = document.getElementById('content');
 
 function decode(hash) {
   const b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
@@ -86,37 +117,41 @@ function table(rounds, from) {
     tr.append(el('td', { className: 'd' }, r.d));
     for (let h = from; h < from + 9; h++) {
       const s = byHole.get(h);
-      const td = el('td', s >= STRICH ? { className: 'x' } : {}, s === undefined ? '' : (s >= STRICH ? '–' : s));
-      tr.append(td);
+      tr.append(el('td', s >= STRICH ? { className: 'x' } : {}, s === undefined ? '' : (s >= STRICH ? '–' : s)));
     }
   }
   return t;
 }
 
 function render(data) {
-  sheet.append(el('h1', {}, '⛳ Golf – ' + data.t));
+  content.append(el('h1', {}, data.t));
+  content.append(el('div', { className: 'bar' }));
   let strich = false;
   for (const p of data.p) {
-    sheet.append(el('h2', {}, p.n));
+    content.append(el('h2', {}, p.n));
     const front = p.r.filter(r => r.h.some(([h]) => h <= 9));
     const back = p.r.filter(r => r.h.some(([h]) => h >= 10));
-    if (front.length) sheet.append(table(front, 1));
-    if (back.length) sheet.append(table(back, 10));
+    if (front.length) content.append(table(front, 1));
+    if (back.length) content.append(table(back, 10));
     strich ||= p.r.some(r => r.h.some(([, s]) => s >= STRICH));
   }
-  if (strich) sheet.append(el('div', { className: 'legend' }, '– = Strich (Bahn beendet)'));
+  if (strich) {
+    const l = el('div', { className: 'legend' });
+    l.append(el('b', {}, '–'), ' = Strich (Bahn beendet)');
+    content.append(l);
+  }
   document.getElementById('actions').hidden = false;
 }
 
 async function shareImage() {
+  await document.fonts.ready;
   const canvas = await html2canvas(sheet, { scale: 2, backgroundColor: '#ffffff' });
   const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
   const file = new File([blob], 'golf.png', { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try { await navigator.share({ files: [file], title: 'Golf' }); } catch (e) { /* abgebrochen */ }
   } else {
-    const a = el('a', { href: URL.createObjectURL(blob), download: 'golf.png' });
-    a.click();
+    el('a', { href: URL.createObjectURL(blob), download: 'golf.png' }).click();
   }
 }
 
@@ -127,9 +162,9 @@ try {
   document.getElementById('img').onclick = shareImage;
   document.getElementById('pdf').onclick = () => window.print();
 } catch (e) {
-  sheet.className = 'empty';
-  sheet.append(el('h1', {}, 'Golf Zähler'));
-  sheet.append(el('p', { className: 'sub' }, 'Keine Daten. Diese Seite wird über „Teilen → Bild / PDF“ in der Uhr-App geöffnet.'));
+  content.className = 'content empty';
+  content.append(el('h1', {}, 'Golf Zähler'));
+  content.append(el('p', {}, 'Keine Daten. Diese Seite wird über „Teilen → Bild / PDF“ in der Uhr-App geöffnet.'));
 }
 </script>
 </body>
